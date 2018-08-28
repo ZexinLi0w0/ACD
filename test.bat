@@ -1,0 +1,1 @@
+start ./acd2d_gui.exe a.ply
