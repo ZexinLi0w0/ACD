@@ -125,7 +125,7 @@ def count(x,y):
 	return point_num
 
 def find_x_range(list):
-	minx_point = (192,192)
+	minx_point = (248,248)
 	maxx_point = (0,0)
 	for point in list:
 		if point[0] < minx_point[0]:
@@ -199,7 +199,7 @@ def sort_incw(old_out,old_inp):
 	inpc = []
 	for points in out:
 		stack = []
-		visited = [[0 for row in range(192)] for col in range(192)]
+		visited = [[0 for row in range(248)] for col in range(248)]
 		size = len(points)
 		(maxp,minp) = find_x_range(points)
 		stack.append(minp)
@@ -257,7 +257,7 @@ def sort_incw(old_out,old_inp):
 
 	for points in inp:
 		stack = []
-		visited = [[0 for row in range(192)] for col in range(192)]
+		visited = [[0 for row in range(248)] for col in range(248)]
 		size = len(points)
 		# print(size)
 		(maxp,minp) = find_x_range(points)
@@ -326,8 +326,8 @@ def outputployfiles(out,inp):
 		for point in points:
 			f.write(str(point[0])+' '+(str(point[1]))+'\n')
 		for i in range(1,len(points)+1):
-			# f.write(str(i)+' ')
-			f.write(str(len(points)+1-i)+' ')
+			f.write(str(i)+' ')
+			# f.write(str(len(points)+1-i)+' ')
 		f.write('\n')
 	for points in inp:
 		f.write(str(len(points))+' in\n')
@@ -437,12 +437,12 @@ def get_distance(point1,point2):
 
 time1 = time.time()
 print("start")
-f = open('./out3.txt')
-for i in range(192):
+f = open('./output_lux.txt')
+for i in range(248):
 	graph.append(f.readline().split())
 
-for i in range(192):
-	for j in range(192):
+for i in range(248):
+	for j in range(248):
 		graph[i][j] = (int)(graph[i][j])
 
 graph = np.array(graph)
@@ -463,7 +463,7 @@ print(time2 - time1)
 (out,inp) = find_border(graph.shape[0],graph.shape[1])
 
 print(len(out),len(inp))
-# (out,inp) = sort_incw(out,inp)
+(out,inp) = sort_incw(out,inp)
 # out = sort_incw(out,inp)
 print(len(out),len(inp))
 out1 = []
@@ -472,7 +472,7 @@ out1 = []
 # 		graph[point[0]][point[1]] += 50
 # 	print(len(points))
 
-(out,inp) = sort_incw(out,inp)
+# (out,inp) = sort_incw(out,inp)
 # 返回内外边界
 for points in out:
 	for point in points:
@@ -501,5 +501,5 @@ outputployfiles(out,inp)
 time3 = time.time()
 print(time3 - time2)
 
-str = 'test.bat'
-p=os.system(str)
+str = 'start ./acd2d_gui.exe a.ply'
+# p=os.system(str)
