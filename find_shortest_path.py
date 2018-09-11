@@ -8,47 +8,6 @@ from PIL import Image
 import numpy as np
 
 graph = []
-
-def initialize(new_graph):
-	global graph
-	graph = pretreatment(new_graph)
-	(minx_point,maxx_point) = find_x_range(new_graph)
-	(out_border,in_border) = find_border(graph.shape[0],graph.shape[1])
-	path = []
-	path.append(minx_point)
-	path.append(maxx_point)
-	# for points in in_border:
-	# 	(temp_border_list,temp_point_list) = cut_to_convex(points)
-	# 	for border in temp_border_list:
-	# 		path.append(find_core(border))
-	# sorted(path,key=lambda x: x[0])
-	# border_graph1 = ...
-	# border_graph2 = ...
-	# (temp_border_list_1,temp_point_list_1) = cut_to_convex(graph1)
-	# (temp_border_list_2,temp_point_list_2) = cut_to_convex(graph2)
-	# for border in temp_border_list_2:
-	# 	temp_border_list_1.append(border)
-	# for points in temp_point_list_2:
-	# 	temp_point_list_1.append(points)
-	# return (temp_border_list_1,temp_point_list_1)
-	return path
-
-	# randompoint = get_randompoint(border_list)
-	# border_list = find_border(graph.shape[0],graph.shape[1])
-	# vertex_list = find_vertex(border_list,graph.shape[0],graph.shape[1])
-	# convex_to_points = find_mapping(graph,vertex_list)
-
-# def get_randompoint(list):
-# 	(x,y) = (np.random.randint(192), np.random.randint(192))
-# 	while not graph[x][y] or not minsquare_distance_to_graph(x,y,list) > 100:
-# 		(x,y) = (np.random.randint(192), np.random.randint(192))
-# 	return (x,y)
-
-# def minsquare_distance_to_graph(x,y,list):
-# 	dis = 1e10
-# 	for point in list:
-# 		dis = dis if (x - point[0]) * (x - point[0]) + (y - point[1]) * (y - point[1]) > dis else (x - point[0]) * (x - point[0]) + (y - point[1]) * (y - point[1])
-# 	return dis
 	
 def pretreatment(old_graph):
 	np_graph = np.array(old_graph)
@@ -326,7 +285,7 @@ def outputployfiles(out,inp):
 		for point in points:
 			f.write(str(point[0])+' '+(str(point[1]))+'\n')
 		for i in range(1,len(points)+1):
-			f.write(str(i)+' ')
+			f.write(str(i)+' ')# 外边界顺时针
 			# f.write(str(len(points)+1-i)+' ')
 		f.write('\n')
 	for points in inp:
@@ -335,97 +294,9 @@ def outputployfiles(out,inp):
 			f.write(str(point[0])+' '+(str(point[1]))+'\n')
 		for i in range(1,len(points)+1):
 			# f.write(str(i)+' ')
-			f.write(str(len(points)+1-i)+' ')
+			f.write(str(len(points)+1-i)+' ')# 内边界逆时针
 		f.write('\n')
 	f.close()
-
-
-
-
-
-
-
-
-# def find_core(list):
-# 	count = 0
-# 	x = 0
-# 	y = 0
-# 	for point in list:
-# 		count += 1
-# 		x += point[0]
-# 		y += point[1]
-# 	x //= count
-# 	y //= count
-# 	return (x,y)
-
-
-
-
-
-# def cut_to_convex(list):
-# 	list = border
-# 	border_list = []
-# 	point_list = []
-# 	for points in border:
-# 		temp_border = []
-# 		temp_point = []
-# 		while not len(points) == 0:
-			
-
-# 		list.remove(points)
-# 		border_list.append(temp_border)
-# 		point_list.append(temp_point)
-
-# 	return (border_list,point_list)
-
-
-
-# def from_border_to_allpoints(list):
-# 	visited = [[0 for row in range(192)] for col in range(192)]
-# 	q = queue.Queue()
-# 	store = []
-# 	temp_graph = [[0 for row in range(192)] for col in range(192)]
-
-# 	(x,y) = find_core(list)
-# 	q.put((x,y))
-# 	visited[x][y] = 1
-
-# 	for point in list:
-# 		temp_graph[point[0]][point[1]] = 1
-
-# 	while not q.empty():
-# 		temp = q.get()
-# 		store.append(temp)
-# 		if visited[temp[0] - 1][temp[1]] == 0 and temp_graph[temp[0] - 1][temp[1]] == 0:
-# 			q.put((temp[0] - 1,temp[1]))
-# 			visited[temp[0] - 1][temp[1]] = 1
-# 		if visited[temp[0] + 1][temp[1]] == 0 and temp_graph[temp[0] + 1][temp[1]] == 0:
-# 			q.put((temp[0] + 1,temp[1]))
-# 			visited[temp[0] + 1][temp[1]] = 1
-# 		if visited[temp[0]][temp[1] - 1] == 0 and temp_graph[temp[0]][temp[1] - 1] == 0:
-# 			q.put((temp[0],temp[1] - 1))
-# 			visited[temp[0]][temp[1] - 1] = 1
-# 		if visited[temp[0]][temp[1] + 1] == 0 and temp_graph[temp[0]][temp[1] + 1] == 0:
-# 			q.put((temp[0],temp[1] + 1))
-# 			visited[temp[0]][temp[1] + 1] = 1
-# 		if visited[temp[0] - 1][temp[1] - 1] == 0 and temp_graph[temp[0] - 1][temp[1] - 1] == 0:
-# 			q.put((temp[0] - 1,temp[1] - 1))
-# 			visited[temp[0] - 1][temp[1] - 1] = 1
-# 		if visited[temp[0] - 1][temp[1] + 1] == 0 and temp_graph[temp[0] - 1][temp[1] + 1] == 0:
-# 			q.put((temp[0] - 1,temp[1] + 1))
-# 			visited[temp[0] - 1][temp[1] + 1] = 1
-# 		if visited[temp[0] + 1][temp[1] - 1] == 0 and temp_graph[temp[0] + 1][temp[1] - 1] == 0:
-# 			q.put((temp[0] + 1,temp[1] - 1))
-# 			visited[temp[0] + 1][temp[1] - 1] = 1
-# 		if visited[temp[0] + 1][temp[1] + 1] == 0 and temp_graph[temp[0] + 1][temp[1] + 1] == 0:
-# 			q.put((temp[0] + 1,temp[1] + 1))
-# 			visited[temp[0] + 1][temp[1] + 1] = 1
-	
-# 	for point in list:
-# 		store.append(point)
-
-# 	return store
-# 	# return temp_graph1
 
 def get_distance(point1,point2):
 	return
@@ -436,44 +307,24 @@ def get_distance(point1,point2):
 
 
 time1 = time.time()
+
 print("start")
 f = open('./output_lux.txt')
 for i in range(248):
 	graph.append(f.readline().split())
-
 for i in range(248):
 	for j in range(248):
 		graph[i][j] = (int)(graph[i][j])
-
 graph = np.array(graph)
-
-# (tborder,tpoints) = initialize(graph)
-# for i in range(192):
-# 	for j in range(192):
-# 		graph[i][j] *= 50
-
 graph = pretreatment(graph)
-# (minx_point,maxx_point) = find_x_range(graph)
-# print((minx_point,maxx_point))
+
 time2 = time.time()
 print(time2 - time1)
-
-
-
 (out,inp) = find_border(graph.shape[0],graph.shape[1])
-
 print(len(out),len(inp))
 (out,inp) = sort_incw(out,inp)
-# out = sort_incw(out,inp)
 print(len(out),len(inp))
-out1 = []
-# for points in out:
-# 	for point in points:
-# 		graph[point[0]][point[1]] += 50
-# 	print(len(points))
 
-# (out,inp) = sort_incw(out,inp)
-# 返回内外边界
 for points in out:
 	for point in points:
 		graph[point[0]][point[1]] += 200
@@ -483,16 +334,13 @@ for points in out:
 	# print(len(points))
 
 n = 0
-
 for points in inp:
 	n += 30
 	# print(len(points))
 	for point in points:
 		graph[point[0]][point[1]] += n
-		out1.append((point[0],point[1]))
 
 arr = np.array(graph)
-
 new_im = Image.fromarray(arr) 
 new_im.show()
 
@@ -500,6 +348,5 @@ outputployfiles(out,inp)
 
 time3 = time.time()
 print(time3 - time2)
-
-str = 'start ./acd2d_gui.exe a.ply'
+# str = 'start ./acd2d_gui.exe a.ply'
 # p=os.system(str)
