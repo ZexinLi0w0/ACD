@@ -1,9 +1,1 @@
-tes = [[1,2,3,4,5,1],[2,2]]
-esd = []
-for ele in tes:
-	esd.append(ele)
-print(esd)
-tes.pop()
-print(esd,tes)
-print("helloworld")
-# print(tes.index(1))
+a = [[46, 44, 2], [114, 25, 10], [87, 43, 18], [86, 63, 26], [81, 86, 34], [101, 159, 43], [74, 149, 51], [40, 66, 59], [46, 61, 67], [49, 60, 74]]

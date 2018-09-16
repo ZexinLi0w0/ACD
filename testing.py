@@ -1,20 +1,47 @@
 import math
 import copy
+import find_shortest_path
+import os
+from PIL import Image
 import numpy as np
 
+graph = []
 polygon = []
 with_mapping = []
 all_vertices = []
-# path = [[0 for cols in range(len(all_vertices))] for rows in range(len(all_vertices))]
-# distance_between_vertices = [[10e8 for cols in range(len(all_vertices))] for rows in range(len(all_vertices))]
-path = [[0 for cols in range(2000)] for rows in range(2000)]
-distance_between_vertices = [[10e8 for cols in range(2000)] for rows in range(2000)]
+path = []
+distance_between_vertices = []
+mapping = {}
+# path = [[0 for cols in range(2000)] for rows in range(2000)]
+# distance_between_vertices = [[10e8 for cols in range(2000)] for rows in range(2000)]
 
-def initialize():
+def initialize(im,imlength,imwidth):
 	#预读文件
 	#预读若干凸多边形，格式为[[vertices chains],...,[]]
+	print("start")
+
+	global graph
+	graph = copy.deepcopy(im)
+	# f = open('./output_lux.txt')
+	# for i in range(248):
+	# 	graph.append(f.readline().split())
+	# for i in range(248):
+	# 	for j in range(248):
+	# 		graph[i][j] = (int)(graph[i][j])
+	graph = np.array(graph)
+	graph = find_shortest_path.pretreatment(graph)
+	# (out,inp) = find_shortest_path.find_border(graph,graph.shape[0],graph.shape[1])
+	(out,inp) = find_shortest_path.find_border(graph,imlength,imwidth)
+	(out,inp) = find_shortest_path.sort_incw(out,inp)
+	# return
+	find_shortest_path.outputployfiles(out,inp)
+
+	os.system('start ./acd2d_gui.exe a.ply')
+
+	print('graph making complete')
 	f = open('copy_a.ply')
 	convexnum = f.readline().split()
+
 	for i in range((int)(convexnum[0])):
 		info = f.readline().split()
 		vertice_chain = []
@@ -23,49 +50,47 @@ def initialize():
 			vertice_chain.append(((float)(temp_text[0]),(float)(temp_text[1])))
 		f.readline().split()
 		polygon.append(vertice_chain)
+
 	for convex in polygon:
-		temp_map = []
 		for point in convex:
 			if point in all_vertices:
-				temp_map.append((point,all_vertices.index(point)))
+				mapping[point] = all_vertices.index(point)
 			else:
 				all_vertices.append(point)
-				temp_map.append((point,len(all_vertices)-1))
-		with_mapping.append(temp_map)
+				mapping[point] = len(all_vertices)-1
 
-	
-	# return polygon
+	floyd_algorithm()
+	print('computing complete')
+
 
 def floyd_algorithm():
-	# path = [[0 for cols in range(len(all_vertices))] for rows in range(len(all_vertices))]
-	for i in range(len(all_vertices)):
-		for j in range(len(all_vertices)):
-			path[i][j] = j
-	
-	# distance_between_vertices = [[10e8 for cols in range(len(all_vertices))] for rows in range(len(all_vertices))]
+	global distance_between_vertices
+	# global path
+	# no need for path now
+	distance_between_vertices = [[10e8 for cols in range(len(all_vertices))] for rows in range(len(all_vertices))]
 	for i in range(len(all_vertices)):
 		distance_between_vertices[i][i] = 0
-	for convex in with_mapping:
+	for convex in polygon:
 		temp_point_num1 = 0
 		temp_point_num2 = 1
 		while temp_point_num1 <= len(convex) - 2:
 			temp_point_num2 = temp_point_num1 + 1
 			while temp_point_num2 <= len(convex) - 1:
-				distance_between_vertices[convex[temp_point_num1][1]][convex[temp_point_num2][1]] = \
-				math.sqrt((convex[temp_point_num1][0][0] - convex[temp_point_num2][0][0]) ** 2 \
-				+ (convex[temp_point_num1][0][1] - convex[temp_point_num2][0][1]) ** 2)
-				distance_between_vertices[convex[temp_point_num2][1]][convex[temp_point_num1][1]] = \
-				distance_between_vertices[convex[temp_point_num1][1]][convex[temp_point_num2][1]]
+				distance_between_vertices[mapping.get(convex[temp_point_num1])][mapping.get(convex[temp_point_num2])] = \
+				math.sqrt((convex[temp_point_num1][0] - convex[temp_point_num2][0]) ** 2 \
+				+ (convex[temp_point_num1][1] - convex[temp_point_num2][1]) ** 2)
+				distance_between_vertices[mapping.get(convex[temp_point_num2])][mapping.get(convex[temp_point_num1])] = \
+				distance_between_vertices[mapping.get(convex[temp_point_num1])][mapping.get(convex[temp_point_num2])]
 				temp_point_num2 += 1
 			temp_point_num1 += 1
-	# print(distance_between_vertices)
+
 	for k in range(len(all_vertices)):
 		for i in range(len(all_vertices)):
 			for j in range(len(all_vertices)):
 				if distance_between_vertices[i][k] != 10e8 and distance_between_vertices[k][j] != 10e8 and \
 				distance_between_vertices[i][k] + distance_between_vertices[k][j] < distance_between_vertices[i][j]:
 					distance_between_vertices[i][j] = distance_between_vertices[i][k] + distance_between_vertices[k][j]
-					path[i][j] = path[i][k]
+					# path[i][j] = path[i][k]
 
 
 
@@ -85,7 +110,9 @@ def find_rectangle_boundry(convex):
 
 def find_in_which_convex(point):
 	#O(mlogN)找到，可用range加速
-	#O(mN)
+	#需要优化这个块
+	#逆时针convex，通过斜率判断
+	#二分查找出相邻的v2,v3
 	convex_series_num = -1
 	on_border = 0
 	temp = -1
@@ -94,25 +121,86 @@ def find_in_which_convex(point):
 		(minx,maxx,miny,maxy) = find_rectangle_boundry(convex)
 		if point[0] >= minx and point[0] <= maxx and point[1] >= miny and point[1] <= maxy:
 			flag = False
-			(v1,v2,v3) = (0,1,2)
-			while flag == False and v3 < len(convex):
-				flag = is_point_in_triangle(point,convex[v1],convex[v2],convex[v3])
-				border_num = is_on_border(point,convex[v1],convex[v2],convex[v3])
-				# if border_num != -1:
-				if border_num != -1:
-					if border_num == 0:
-						on_border = 1
-					elif (v1,v2,v3) == (0,1,2) and (border_num == 1 or border_num == 2):
-						on_border = 1
-					elif (v1,v2,v3) == (0,len(convex)-2,len(convex)-1) and (border_num == 2 or border_num == 3):
-						on_border = 1
-					elif border_num == 2:
-						on_border = 1
-				v2 += 1
-				v3 += 1
-			if flag == True:
+			# (v1,v2,v3) = (0,1,2)
+			(v1,v2,v3) = (0,1,len(convex)-1)
+			t1 = (convex[v2][0] - convex[v1][0],convex[v2][1] - convex[v1][1])
+			t2 = (convex[v3][0] - convex[v1][0],convex[v3][1] - convex[v1][1])
+			t3 = (point[0] - convex[v1][0],point[1] - convex[v2][1])
+			l1 = math.sqrt(t1[0] * t1[0] + t1[1] * t1[1])
+			l2 = math.sqrt(t2[0] * t2[0] + t2[1] * t2[1])
+			l3 = math.sqrt(t3[0] * t3[0] + t3[1] * t3[1])
+			if t3 == (0,0):
+				border_num = 1
 				convex_series_num = temp
+				flag = True
 				break
+
+			if (t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3) > 1:
+				angle1 = math.acos(1)
+			elif (t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3) < -1:
+				angle1 = math.acos(-1)
+			else:
+				angle1 = math.acos((t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3))
+			if (t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1) > 1:
+				angle2 = math.acos(1)
+			elif (t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1) < -1:
+				angle2 = math.acos(-1)
+			else:
+				angle2 = math.acos((t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1))
+
+			if angle2 >= angle1:
+				while v3 - v2 >= 1:
+					if v3 - v2 == 1:
+						flag = is_point_in_triangle(point,convex[v1],convex[v2],convex[v3])
+						if flag == True:
+							border_num = is_on_border(point,convex[v1],convex[v2],convex[v3])
+							if border_num != -1:
+								if border_num == 0:
+									on_border = 1
+								elif (v1,v2,v3) == (0,1,2) and (border_num == 1 or border_num == 2):
+									on_border = 1
+								elif (v1,v2,v3) == (0,len(convex)-2,len(convex)-1) and (border_num == 2 or border_num == 3):
+									on_border = 1
+								elif border_num == 2:
+									on_border = 1
+					else:
+						temp_num = (v2 + v3) / 2
+						temp_num = int(temp_num)
+						# print(v2,v3)
+						t1 = (convex[v2][0] - convex[v1][0],convex[v2][1] - convex[v1][1])
+						t2 = (convex[temp_num][0] - convex[v1][0],convex[temp_num][1] - convex[v1][1])
+						t3 = (point[0] - convex[v1][0],point[1] - convex[v2][1])
+						l1 = math.sqrt(t1[0] * t1[0] + t1[1] * t1[1])
+						l2 = math.sqrt(t2[0] * t2[0] + t2[1] * t2[1])
+						l3 = math.sqrt(t3[0] * t3[0] + t3[1] * t3[1])
+						if t2 == (0,0) or t3 == (0,0):
+							border_num = 1
+							convex_series_num = temp
+							flag = True
+							break
+						
+						if (t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3) > 1:
+							angle1 = math.acos(1)
+						elif (t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3) < -1:
+							angle1 = math.acos(-1)
+						else:
+							angle1 = math.acos((t2[0] * t3[0] + t2[1] * t3[1])/(l2*l3))
+						if (t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1) > 1:
+							angle2 = math.acos(1)
+						elif (t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1) < -1:
+							angle2 = math.acos(-1)
+						else:
+							angle2 = math.acos((t2[0] * t1[0] + t2[1] * t1[1])/(l2*l1))
+						
+						if angle2 >= angle1:
+							v3 = temp_num
+						else:
+							v2 = temp_num
+					if v3 - v2 == 1:
+						break
+				if flag == True:
+					convex_series_num = temp
+					break
 	return (convex_series_num,on_border)
 
 def is_on_border(point,vertice1,vertice2,vertice3):
@@ -197,62 +285,34 @@ def get_final_distance(point1,point2):
 	if p1[2] == p2[2]:
 		distance = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 	elif p1[3] == 1 and p2[3] == 1:
-		p1_num = p2_num = 0
-		temp = 0
-		for point in with_mapping:
-			if point[0] == (p1[0],p1[1]):
-				p1_num = temp
-			if point[0] == (p2[0],p2[1]):
-				p2_num = temp
-			temp += 1
-		distance = distance_between_vertices[p1_num][p2_num]
+		distance = distance_between_vertices[mapping.get((p1[0],p1[1]))][mapping.get((p2[0],p2[1]))]
 	elif p1[3] == 1:
 		for vertice in polygon[p2[2]]:
-			p1_num = p2_num = 0
-			temp = 0
-			for point in with_mapping:
-				if point[0] == (p1[0],p1[1]):
-					p1_num = temp
-				if point[0] == vertice:
-					p2_num = temp
-				temp += 1
-			temp_distance = distance_between_vertices[p1_num][p2_num]
+			temp_distance = distance_between_vertices[mapping.get((p1[0],p1[1]))][mapping.get((vertice[0],vertice[1]))]
 			vertice_to_p2 = math.sqrt((vertice[0] - p2[0]) ** 2 + (vertice[1] - p2[1]) ** 2)
 			distance = distance if (temp_distance + vertice_to_p2 > distance) else (temp_distance + vertice_to_p2)
 	elif p2[3] == 1:
 		for vertice in polygon[p1[2]]:
-			p1_num = p2_num = 0
-			temp = 0
-			for point in with_mapping:
-				if point[0] == (p2[0],p2[1]):
-					p1_num = temp
-				if point[0] == vertice:
-					p2_num = temp
-				temp += 1
-			temp_distance = distance_between_vertices[p1_num][p2_num]
+			temp_distance = distance_between_vertices[mapping.get((vertice[0],vertice[1]))][mapping.get((p2[0],p2[1]))]
 			vertice_to_p1 = math.sqrt((vertice[0] - p1[0]) ** 2 + (vertice[1] - p1[1]) ** 2)
 			distance = distance if (temp_distance + vertice_to_p1 > distance) else (temp_distance + vertice_to_p1)
 	else:
 		for vertice1 in polygon[p1[2]]:
 			for vertice2 in polygon[p2[2]]:
-				p1_num = p2_num = 0
-				temp = 0
-				for point in with_mapping:
-					if point[0] == vertice1:
-						p1_num = temp
-					if point[0] == vertice2:
-						p2_num = temp
-					temp += 1
-				temp_distance = distance_between_vertices[p1_num][p2_num]
+				temp_distance = distance_between_vertices[mapping.get((vertice1[0],vertice1[1]))][mapping.get((vertice2[0],vertice2[1]))]
 				vertice_to_p1 = math.sqrt((vertice1[0] - p1[0]) ** 2 + (vertice1[1] - p1[1]) ** 2)
 				vertice_to_p2 = math.sqrt((vertice2[0] - p2[0]) ** 2 + (vertice2[1] - p2[1]) ** 2)
 				distance = distance if (temp_distance + vertice_to_p1 + vertice_to_p2 > distance) \
 				else (temp_distance + vertice_to_p1 + vertice_to_p2)
 	return distance
 
-def main():
-	initialize()
-	floyd_algorithm()
+#def main():
+	# im = imlength = imwidth = 1
+	# initialize(im,imlength,imwidth)
+	# print("initializing complete")
+# floyd_algorithm()
+# print("computing complete")
+# print(distance_between_vertices)
 	# num = find_in_which_convex((153,81))
 	# num = find_in_which_convex((-1,-1))
 	# print(num)
@@ -261,23 +321,21 @@ def main():
 	# num = find_in_which_convex((10,10))
 	# print(with_mapping)
 
-	point1 = (50,50)
-	point2 = (153,80.5)
-	point = generate_advanced_point((153.5,80.5))
+#point1 = (50,50)
+#point2 = (153,80.5)
+	# point = generate_advanced_point((153.5,80.5))
 	# print(point)
-	dis = find_shortest_distance_to_boundry(point)
-	print(get_final_distance(point1,point2))
-	while True:
-		x = input("point1_x:")
-		y = input("point1_y:")
-		p1 = (float(x),float(y))
-		x = input("point2_x:")
-		y = input("point2_y:")
-		p2 = (float(x),float(y))
-		print(get_final_distance(p1,p2))
-	# print(dis[0]+get_distance(dis[1],point1))
-	# distance = find_shortest_distance_to_boundry(point)
+	# dis = find_shortest_distance_to_boundry(point)
+#print(get_final_distance(point1,point2))
+#while True:
+#	x = input("point1_x:")
+#	y = input("point1_y:")
+#	p1 = (float(x),float(y))
+#	x = input("point2_x:")
+#	y = input("point2_y:")
+#	p2 = (float(x),float(y))
+#	print(get_final_distance(p1,p2))
 
-if __name__ == "__main__":
-	main()
+#if __name__ == "__main__":
+#	main()
  

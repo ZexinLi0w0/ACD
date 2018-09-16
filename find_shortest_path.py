@@ -38,7 +38,6 @@ def pretreatment(old_graph):
 			if np_graph[temp_point[0]][temp_point[1] + 1] == 1 and (temp_point[0],temp_point[1] + 1) in store:
 				store.remove((temp_point[0],temp_point[1] + 1))
 				q.put((temp_point[0],temp_point[1] + 1))
-
 			if np_graph[temp_point[0] - 1][temp_point[1] - 1] == 1 and (temp_point[0] - 1,temp_point[1] - 1) in store:
 				store.remove((temp_point[0] - 1,temp_point[1] - 1))
 				q.put((temp_point[0] - 1,temp_point[1] - 1))
@@ -94,13 +93,31 @@ def find_x_range(list):
 	
 	return (minx_point,maxx_point)
 
-def find_border(row,column):
+def find_border(graph,row,column):
 	list = []
 	for i in range(row):
 		for j in range(column):
 			if graph[i][j] == 1:
-				temp = count(i,j)
-				if temp < 8 and temp > 0:
+				# temp = count(i,j)
+				point_num = 0
+				if graph[i - 1][j - 1] == 1:
+					point_num += 1
+				if graph[i - 1][j] == 1:
+					point_num += 1
+				if graph[i - 1][j + 1] == 1:
+					point_num += 1
+				if graph[i][j - 1] == 1:
+					point_num += 1
+
+				if graph[i][j + 1] == 1:
+					point_num += 1
+				if graph[i + 1][j - 1] == 1:
+					point_num += 1
+				if graph[i + 1][j] == 1:
+					point_num += 1
+				if graph[i + 1][j + 1] == 1:
+					point_num += 1
+				if point_num < 8 and point_num > 0:
 					list.append((i,j))
 
 	out_border = []
@@ -305,48 +322,48 @@ def get_distance(point1,point2):
 
 
 
+if __name__ == 'main':
+	time1 = time.time()
 
-time1 = time.time()
+	print("start")
+	f = open('./output_lux.txt')
+	for i in range(248):
+		graph.append(f.readline().split())
+	for i in range(248):
+		for j in range(248):
+			graph[i][j] = (int)(graph[i][j])
+	graph = np.array(graph)
+	graph = pretreatment(graph)
 
-print("start")
-f = open('./output_lux.txt')
-for i in range(248):
-	graph.append(f.readline().split())
-for i in range(248):
-	for j in range(248):
-		graph[i][j] = (int)(graph[i][j])
-graph = np.array(graph)
-graph = pretreatment(graph)
+	time2 = time.time()
+	print(time2 - time1)
+	(out,inp) = find_border(graph.shape[0],graph.shape[1])
+	print(len(out),len(inp))
+	(out,inp) = sort_incw(out,inp)
+	print(len(out),len(inp))
 
-time2 = time.time()
-print(time2 - time1)
-(out,inp) = find_border(graph.shape[0],graph.shape[1])
-print(len(out),len(inp))
-(out,inp) = sort_incw(out,inp)
-print(len(out),len(inp))
+	for points in out:
+		for point in points:
+			graph[point[0]][point[1]] += 200
+		# print(len(points))
 
-for points in out:
-	for point in points:
-		graph[point[0]][point[1]] += 200
-	# print(len(points))
+	# for points in inp:
+		# print(len(points))
 
-# for points in inp:
-	# print(len(points))
+	n = 0
+	for points in inp:
+		n += 30
+		# print(len(points))
+		for point in points:
+			graph[point[0]][point[1]] += n
 
-n = 0
-for points in inp:
-	n += 30
-	# print(len(points))
-	for point in points:
-		graph[point[0]][point[1]] += n
+	arr = np.array(graph)
+	new_im = Image.fromarray(arr) 
+	new_im.show()
 
-arr = np.array(graph)
-new_im = Image.fromarray(arr) 
-new_im.show()
+	outputployfiles(out,inp)
 
-outputployfiles(out,inp)
-
-time3 = time.time()
-print(time3 - time2)
-# str = 'start ./acd2d_gui.exe a.ply'
-# p=os.system(str)
+	time3 = time.time()
+	print(time3 - time2)
+	# str = 'start ./acd2d_gui.exe a.ply'
+	# p=os.system(str)
