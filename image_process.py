@@ -7,7 +7,7 @@ def read_image(filepath, ratio):
 	(length,height) = im.size
 	im = im.resize((length//ratio,height//ratio))
 	print(im)
-	im.save('cymsbsbsbsb.png')
+	# im.save('cymsbsbsbsb.png')
 	imarr = plimg.pil_to_array(im)
 	imarr.flags.writeable = True
 	graph_normalization(imarr,length//ratio,height//ratio)

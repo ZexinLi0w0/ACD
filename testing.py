@@ -22,24 +22,27 @@ def initialize(im,imlength,imwidth):
 
 	global graph
 	graph = copy.deepcopy(im)
-	# f = open('./output_lux.txt')
-	# for i in range(248):
-	# 	graph.append(f.readline().split())
-	# for i in range(248):
-	# 	for j in range(248):
-	# 		graph[i][j] = (int)(graph[i][j])
 	graph = np.array(graph)
 	graph = find_shortest_path.pretreatment(graph)
 	# (out,inp) = find_shortest_path.find_border(graph,graph.shape[0],graph.shape[1])
 	(out,inp) = find_shortest_path.find_border(graph,imlength,imwidth)
 	(out,inp) = find_shortest_path.sort_incw(out,inp)
-	# return
 	find_shortest_path.outputployfiles(out,inp)
 
-	os.system('start ./acd2d_gui.exe a.ply')
+	# for windows
+	# os.system('start ./acd2d_gui.exe a.ply')
+
+	# for linux
+	os.system('./acd2d_gui -s -g a.ply')
 
 	print('graph making complete')
-	f = open('copy_a.ply')
+	
+	# for windows
+	# f = open('copy_a.ply')
+
+	# for linux
+	f = open('a.ply-acd0.000-hybrid1.poly')	
+
 	convexnum = f.readline().split()
 
 	for i in range((int)(convexnum[0])):

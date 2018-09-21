@@ -77,7 +77,7 @@ def som(cities, epoches, learning_rate = 0.8):
 
 if __name__ == '__main__':
 	(im,mlength,mheight) = read_image('./a.pgm',2)
-	cities = data_generator.data_generate(10,im,mlength,mheight)
+	cities = data_generator.data_generate(100,im,mlength,mheight)
 
 
 	initialize(im,mlength,mheight)
