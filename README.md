@@ -10,7 +10,14 @@ following way: [double/int:pos_x,double/int:pos_y], and after computing you will
 sorted list which represents the order of cities in the following way:
 [double/int:pos_x, double/int:pos_y, double/int:key].
 
+# Dependencies
+
+Ubuntu 16.04
+
+python3
+
 # Test
+
 Just `python main.py`
 
 # License
