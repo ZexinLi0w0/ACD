@@ -10,6 +10,19 @@ following way: [double/int:pos_x,double/int:pos_y], and after computing you will
 sorted list which represents the order of cities in the following way:
 [double/int:pos_x, double/int:pos_y, double/int:key].
 
+# Presentation
+Raw information from rador
+
+![Raw information from rador](https://github.com/ZexinLi0w0/ACD/blob/master/only%20point.png)
+
+Path Planning from SOM
+
+![SOM](https://github.com/ZexinLi0w0/ACD/blob/master/som.png)
+
+Path Planning from ACD
+
+![ACD](https://github.com/ZexinLi0w0/ACD/blob/master/path.png)
+
 # Dependencies
 
 Ubuntu 16.04
