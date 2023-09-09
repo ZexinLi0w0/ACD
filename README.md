@@ -35,8 +35,10 @@ python3
 
 Just `python main.py`
 
-# License
-MIT license
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ZexinLi0w0/ACD&type=Date)](https://star-history.com/#ZexinLi0w0/ACD&Date)
+
 
 # Acknowledge
 Refer to https://github.com/jmlien/acd2d
